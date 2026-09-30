@@ -81,6 +81,9 @@ export default function Home() {
   const [data, setData] = useState<PortfolioData>(DEFAULT_DATA);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+
   const [loginUser, setLoginUser] = useState("admin");
   const [loginPass, setLoginPass] = useState("admin123");
   const [loginError, setLoginError] = useState("");
@@ -133,10 +136,24 @@ export default function Home() {
     }
   };
 
-  const handleChangeProfilePic = () => {
-    const url = prompt("Enter new Profile Image URL:", data.profilePic);
-    if (url && url.trim()) {
-      saveToStorage({ ...data, profilePic: url.trim() });
+  // Social-Media Style File Upload Handler (FileReader -> Base64)
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setSelectedFile(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveUploadedPhoto = () => {
+    if (selectedFile) {
+      saveToStorage({ ...data, profilePic: selectedFile });
+      setShowPhotoModal(false);
+      setSelectedFile(null);
     }
   };
 
@@ -212,8 +229,8 @@ export default function Home() {
               <span className="font-bold text-sm text-emerald-300">Admin Editing Mode Active — Double-click fields to edit!</span>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
-              <button onClick={handleChangeProfilePic} className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition-colors">
-                📷 Change Photo URL
+              <button onClick={() => setShowPhotoModal(true)} className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition-colors flex items-center gap-1">
+                📷 Change Photo
               </button>
               <button onClick={handleExportJSON} className="px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-600 transition-colors">
                 📥 Export JSON
@@ -260,7 +277,7 @@ export default function Home() {
               onClick={() => isAdmin ? setIsAdmin(false) : setShowLoginModal(true)}
               className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:border-blue-500 transition-all"
             >
-              🔒 {isAdmin ? "Admin Logged In" : "Admin Login"}
+              🔒 {isAdmin ? "Admin Active" : "Admin Access"}
             </button>
 
             <a href="#contact" className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg shadow-blue-500/25 transition-all">
@@ -360,7 +377,7 @@ export default function Home() {
 
               </div>
 
-              {/* Profile Card */}
+              {/* Profile Card with Social-Media Camera Change Button */}
               <div className="lg:col-span-5 flex justify-center">
                 <div className="relative w-full max-w-md">
                   <div className="absolute -inset-4 bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 rounded-3xl blur-2xl opacity-40 animate-pulse-slow"></div>
@@ -374,6 +391,22 @@ export default function Home() {
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                         unoptimized
                       />
+                      
+                      {/* Facebook / Instagram Style Camera Badge Button */}
+                      <button
+                        onClick={() => {
+                          if (!isAdmin) {
+                            setShowLoginModal(true);
+                          } else {
+                            setShowPhotoModal(true);
+                          }
+                        }}
+                        className="absolute top-3 right-3 z-20 px-3.5 py-1.5 rounded-full bg-slate-950/90 hover:bg-blue-600 text-white text-xs font-semibold border border-slate-700 hover:border-blue-400 backdrop-blur-md shadow-xl transition-all flex items-center gap-1.5 transform hover:scale-105"
+                        title="Change Profile Photo"
+                      >
+                        📷 <span>Change Photo</span>
+                      </button>
+
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80"></div>
                       
                       <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
@@ -797,6 +830,85 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Social-Media Style Photo Selector Modal */}
+      {showPhotoModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6 relative">
+            <button onClick={() => { setShowPhotoModal(false); setSelectedFile(null); }} className="absolute top-6 right-6 text-slate-400 hover:text-white text-xl font-bold">
+              ✕
+            </button>
+
+            <div className="text-center space-y-2">
+              <div className="w-14 h-14 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center mx-auto text-3xl">
+                📷
+              </div>
+              <h3 className="text-2xl font-bold text-white">Update Profile Picture</h3>
+              <p className="text-xs text-slate-400">Select a new photo directly from your device or phone (just like Facebook & Instagram).</p>
+            </div>
+
+            {/* Photo Preview Box */}
+            <div className="flex flex-col items-center space-y-4 py-2">
+              <div className="relative w-44 h-44 rounded-full overflow-hidden border-4 border-blue-500/80 shadow-2xl bg-slate-950">
+                <Image
+                  src={selectedFile || data.profilePic}
+                  alt="Preview"
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+
+              {/* Upload Button */}
+              <label className="cursor-pointer px-6 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold text-sm transition-all shadow-xl flex items-center gap-2 transform hover:scale-105">
+                📁 <span>Choose Photo from Device</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+              <span className="text-[11px] text-slate-400">Supports JPG, PNG, WEBP, or GIF images</span>
+            </div>
+
+            <div className="flex items-center justify-between gap-4 pt-4 border-t border-slate-800">
+              <button
+                onClick={() => {
+                  if (confirm("Reset to default profile photo?")) {
+                    saveToStorage({ ...data, profilePic: DEFAULT_DATA.profilePic });
+                    setShowPhotoModal(false);
+                    setSelectedFile(null);
+                  }
+                }}
+                className="text-xs text-rose-400 hover:underline"
+              >
+                Reset Default Photo
+              </button>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => { setShowPhotoModal(false); setSelectedFile(null); }}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveUploadedPhoto}
+                  disabled={!selectedFile}
+                  className={`px-5 py-2.5 rounded-xl font-bold text-xs text-white shadow-lg transition-all ${
+                    selectedFile
+                      ? 'bg-blue-600 hover:bg-blue-500 cursor-pointer shadow-blue-500/30'
+                      : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                  }`}
+                >
+                  Save Profile Photo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Admin Login Modal */}
       {showLoginModal && (
