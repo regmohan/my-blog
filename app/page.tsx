@@ -213,6 +213,14 @@ export default function Home() {
     ? data.skills
     : data.skills.filter(s => s.cat === skillCategory);
 
+  const triggerPhotoUpload = () => {
+    if (!isAdmin) {
+      setShowLoginModal(true);
+    } else {
+      setShowPhotoModal(true);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-white font-sans overflow-x-hidden">
       
@@ -226,11 +234,11 @@ export default function Home() {
           <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <span className="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></span>
-              <span className="font-bold text-sm text-emerald-300">Admin Editing Mode Active — Double-click fields to edit!</span>
+              <span className="font-bold text-sm text-emerald-300">Admin Mode Active — Double-click fields to edit!</span>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
               <button onClick={() => setShowPhotoModal(true)} className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition-colors flex items-center gap-1">
-                📷 Change Photo
+                📷 Change Profile Photo
               </button>
               <button onClick={handleExportJSON} className="px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-600 transition-colors">
                 📥 Export JSON
@@ -377,13 +385,18 @@ export default function Home() {
 
               </div>
 
-              {/* Profile Card with Social-Media Camera Change Button */}
+              {/* Profile Card with High-Visibility Camera Upload Buttons */}
               <div className="lg:col-span-5 flex justify-center">
-                <div className="relative w-full max-w-md">
+                <div className="relative w-full max-w-md space-y-4">
                   <div className="absolute -inset-4 bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 rounded-3xl blur-2xl opacity-40 animate-pulse-slow"></div>
                   
                   <div className="relative rounded-3xl bg-slate-900 border border-slate-800 p-6 shadow-2xl backdrop-blur-xl">
-                    <div className="relative w-full aspect-square rounded-2xl overflow-hidden border-2 border-slate-700/80 shadow-inner group">
+                    
+                    {/* Clickable Image Container */}
+                    <div
+                      onClick={triggerPhotoUpload}
+                      className="relative w-full aspect-square rounded-2xl overflow-hidden border-2 border-slate-700/80 shadow-inner group cursor-pointer"
+                    >
                       <Image
                         src={data.profilePic}
                         alt="Mohan Regmi"
@@ -392,24 +405,27 @@ export default function Home() {
                         unoptimized
                       />
                       
-                      {/* Facebook / Instagram Style Camera Badge Button */}
+                      {/* Hover Overlay with Camera Icon */}
+                      <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 z-20">
+                        <div className="w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl shadow-2xl">
+                          📷
+                        </div>
+                        <span className="text-xs font-bold text-white bg-slate-900/90 px-3.5 py-1.5 rounded-full border border-slate-700 shadow">
+                          Click to Change Photo
+                        </span>
+                      </div>
+
+                      {/* Always Visible Top-Right Badge Button */}
                       <button
-                        onClick={() => {
-                          if (!isAdmin) {
-                            setShowLoginModal(true);
-                          } else {
-                            setShowPhotoModal(true);
-                          }
-                        }}
-                        className="absolute top-3 right-3 z-20 px-3.5 py-1.5 rounded-full bg-slate-950/90 hover:bg-blue-600 text-white text-xs font-semibold border border-slate-700 hover:border-blue-400 backdrop-blur-md shadow-xl transition-all flex items-center gap-1.5 transform hover:scale-105"
-                        title="Change Profile Photo"
+                        onClick={(e) => { e.stopPropagation(); triggerPhotoUpload(); }}
+                        className="absolute top-3 right-3 z-30 px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-2xl border border-blue-400 flex items-center gap-1.5 transition-all transform hover:scale-105"
                       >
                         📷 <span>Change Photo</span>
                       </button>
 
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80"></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80 pointer-events-none"></div>
                       
-                      <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+                      <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end pointer-events-none">
                         <div className="bg-slate-950/80 backdrop-blur-md px-3.5 py-1.5 rounded-lg border border-slate-700">
                           <span className="text-xs font-semibold text-white">Kathmandu, Nepal</span>
                         </div>
@@ -419,7 +435,15 @@ export default function Home() {
                       </div>
                     </div>
 
-                    <div className="mt-6 space-y-4">
+                    {/* Dedicated Photo Upload Action Button below Image */}
+                    <button
+                      onClick={triggerPhotoUpload}
+                      className="w-full mt-4 py-3 px-4 rounded-xl bg-blue-600/20 hover:bg-blue-600 border border-blue-500/40 hover:border-blue-400 text-blue-300 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-lg"
+                    >
+                      📷 <span>Click Here to Upload / Change Profile Photo</span>
+                    </button>
+
+                    <div className="mt-4 space-y-4">
                       <div className="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-3">
                         <span className="flex items-center gap-1.5">🏢 Subisu - RSBU Unit</span>
                         <span className="px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded font-semibold">Active Executive</span>
