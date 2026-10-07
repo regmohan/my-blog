@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spark Commercial BI | Case Study Dashboard - Mohan Regmi</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#0284c7',
+              700: '#0369a1',
+              900: '#0c4a6e',
+              navy: '#1e3a5f',
+              dark: '#0f172a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .tab-active { border-bottom: 3px solid #0284c7; color: #0284c7; font-weight: 600; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+  <!-- AUTH MODAL -->
+  <div id="loginModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-100">
+      <div class="text-center mb-6">
+        <div class="w-14 h-14 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-3 text-brand-700 text-2xl shadow-inner">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-900">Spark BI Dashboard</h2>
+        <p class="text-sm text-slate-500 mt-1">Automotive Commercial Case Study Analytics</p>
+        <div class="inline-block bg-slate-100 text-slate-600 text-xs px-2.5 py-1 rounded-full mt-2 font-medium">
+          regmimohan.com.np
+        </div>
+      </div>
+
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Access Key / Passcode</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+              <i class="fa-solid fa-lock"></i>
+            </span>
+            <input type="password" id="passcode" placeholder="Enter passcode or click Quick Demo" 
+              class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+          </div>
+          <p id="authError" class="text-xs text-rose-600 mt-1.5 hidden"><i class="fa-solid fa-circle-exclamation mr-1"></i> Invalid passcode. Use "spark" or click Quick Demo.</p>
+        </div>
+
+        <button type="submit" class="w-full bg-brand-navy hover:bg-slate-900 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-2">
+          <span>Enter Dashboard</span>
+          <i class="fa-solid fa-arrow-right text-xs"></i>
+        </button>
+      </form>
+
+      <div class="relative my-6">
+        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+        <div class="relative flex justify-center text-xs uppercase"><span class="bg-white px-3 text-slate-400 font-medium">Quick Access</span></div>
+      </div>
+
+      <button id="guestLoginBtn" type="button" class="w-full bg-brand-50 hover:bg-brand-100 text-brand-700 font-semibold py-2.5 rounded-xl text-sm border border-brand-200 transition flex items-center justify-center gap-2">
+        <i class="fa-solid fa-users-viewfinder"></i>
+        <span>Instant View (Team / Public Mode)</span>
+      </button>
+
+      <p class="text-xs text-center text-slate-400 mt-5">
+        Prepared by <strong class="text-slate-600">Mohan Regmi</strong> | Data Analyst / MIS Portfolio
+      </p>
+    </div>
+  </div>
+
+  <!-- NAVIGATION BAR -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo / Title -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-brand-navy text-white rounded-xl flex items-center justify-center font-bold text-lg shadow-sm">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-slate-900 text-lg tracking-tight">Spark BI</span>
+              <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-md font-semibold">Case Study</span>
+            </div>
+            <p class="text-xs text-slate-500 hidden sm:block">Automotive Commercial & Financial Assessment</p>
+          </div>
+        </div>
+
+        <!-- Right Side: User profile & Excel Download -->
+        <div class="flex items-center gap-3">
+          <a href="Automotive_Case_Study_Candidate_Solution.xlsx" download 
+             class="hidden md:flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow-xs">
+            <i class="fa-solid fa-file-excel text-sm"></i>
+            <span>Download Solution.xlsx</span>
+          </a>
+
+          <a href="https://regmimohan.com.np/" target="_blank"
+             class="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-brand-700 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg transition">
+            <i class="fa-solid fa-globe"></i>
+            <span class="hidden sm:inline">regmimohan.com.np</span>
+          </a>
+
+          <div class="flex items-center gap-2 border-l border-slate-200 pl-3">
+            <span class="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-bold" id="userAvatar">MR</span>
+            <button id="logoutBtn" title="Logout" class="text-slate-400 hover:text-rose-600 text-sm p-1.5 transition">
+              <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex space-x-6 overflow-x-auto border-t border-slate-100 scrollbar-none text-sm font-medium text-slate-600">
+        <button onclick="switchTab('tab-overview')" id="nav-tab-overview" class="py-3 px-1 border-b-2 border-transparent hover:text-slate-900 whitespace-nowrap flex items-center gap-2 tab-active">
+          <i class="fa-solid fa-clipboard-check"></i>
+          <span>Case Study Q&A Answers</span>
+        </button>
+        <button onclick="switchTab('tab-sales')" id="nav-tab-sales" class="py-3 px-1 border-b-2 border-transparent hover:text-slate-900 whitespace-nowrap flex items-center gap-2">
+          <i class="fa-solid fa-chart-column"></i>
+          <span>Sales & Marketing Funnel</span>
+        </button>
+        <button onclick="switchTab('tab-costing')" id="nav-tab-costing" class="py-3 px-1 border-b-2 border-transparent hover:text-slate-900 whitespace-nowrap flex items-center gap-2">
+          <i class="fa-solid fa-tags"></i>
+          <span>Landed Cost & Margins</span>
+        </button>
+        <button onclick="switchTab('tab-collections')" id="nav-tab-collections" class="py-3 px-1 border-b-2 border-transparent hover:text-slate-900 whitespace-nowrap flex items-center gap-2">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span>Receivables & Aging Matrix</span>
+        </button>
+        <button onclick="switchTab('tab-decision')" id="nav-tab-decision" class="py-3 px-1 border-b-2 border-transparent hover:text-slate-900 whitespace-nowrap flex items-center gap-2">
+          <i class="fa-solid fa-scale-balanced"></i>
+          <span>Option A vs B Strategy</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: EXECUTIVE OVERVIEW & Q&A ANSWERS -->
+    <!-- ========================================== -->
+    <div id="tab-overview" class="space-y-6">
+      <!-- Top Alert Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-semibold uppercase tracking-wider mb-2">
+            <span>Sales vs AR Growth</span>
+            <span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded font-bold">Unhealthy</span>
+          </div>
+          <div class="text-2xl font-bold text-slate-900">NPR 10.80 Cr</div>
+          <p class="text-xs text-slate-500 mt-1">Outstanding AR exceeds entire September sales (8.9 Cr). Cash is trapped.</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-semibold uppercase tracking-wider mb-2">
+            <span>Lead Quality Dilution</span>
+            <span class="text-amber-600 bg-amber-50 px-2 py-0.5 rounded font-bold">38.9% &rarr; 25.0%</span>
+          </div>
+          <div class="text-2xl font-bold text-slate-900">75% Junk Leads</div>
+          <p class="text-xs text-slate-500 mt-1">Leads grew 278% but qualified leads declined. Cost per qualified lead rose +15%.</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-semibold uppercase tracking-wider mb-2">
+            <span>Critical Aging Debt</span>
+            <span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded font-bold">>90 Days</span>
+          </div>
+          <div class="text-2xl font-bold text-slate-900">53.8% of Debt</div>
+          <p class="text-xs text-slate-500 mt-1">NPR 1.33 Cr is past 90 days. ABC Construction alone holds 0.60 Cr (115d).</p>
+        </div>
+      </div>
+
+      <!-- Q&A Content Block -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-100 gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">Candidate Solutions to Case Study Questions (Q1 to Q10)</h2>
+            <p class="text-xs text-slate-500">Concise, human-style evaluation based on data analysis</p>
+          </div>
+          <div class="flex gap-2">
+            <span class="bg-slate-100 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+              <i class="fa-solid fa-user-check text-brand-500"></i> Role: Data Analyst / MIS Officer
+            </span>
+          </div>
+        </div>
+
+        <div class="mt-6 space-y-6">
+          <!-- Section 1 -->
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <div class="bg-slate-50 px-4 py-3 font-bold text-sm text-brand-900 flex items-center justify-between">
+              <span>1. SALES & BUSINESS PERFORMANCE</span>
+              <span class="text-xs font-normal text-slate-500">Questions 1 & 2</span>
+            </div>
+            <div class="p-5 space-y-4 text-sm divide-y divide-slate-100">
+              <div class="pt-2">
+                <h4 class="font-bold text-slate-900 mb-1.5">Q1: Is this a healthy improvement in business performance? What concerns or questions would you raise?</h4>
+                <p class="text-slate-700 leading-relaxed">
+                  <strong class="text-rose-700">No, this is NOT a healthy improvement.</strong> While top-line sales grew from NPR 3.60 Cr to 8.90 Cr (+147%), two severe concerns exist:
+                </p>
+                <ul class="list-disc pl-5 mt-2 space-y-1 text-slate-600">
+                  <li><strong>Outstanding Receivables grew from 6.20 Cr to 10.80 Cr (+74%):</strong> At 10.8 Cr, uncollected money is larger than September's entire monthly sales (8.9 Cr). The company is selling on paper, but cash is trapped.</li>
+                  <li><strong>Discounts are eating profits (2.0% &rarr; 5.0%):</strong> Vehicle gross margins are thin (6.4% to 8.7%). Offering a 5% discount wipes out 57% to 78% of gross margin. We are buying volume by giving away company profit.</li>
+                </ul>
+              </div>
+              <div class="pt-4">
+                <h4 class="font-bold text-slate-900 mb-1.5">Q2: What additional KPIs or information would you want to see?</h4>
+                <p class="text-slate-600">
+                  1. <strong>Cash Collections vs Credit Sales:</strong> Actual cash deposited in bank vs invoiced sales.<br>
+                  2. <strong>Days Sales Outstanding (DSO):</strong> Velocity of converting receivables to cash.<br>
+                  3. <strong>Net Realized Margin per Unit:</strong> Gross profit minus discount, bank LC interest, and vehicle holding costs.<br>
+                  4. <strong>Product Sales Mix:</strong> Breakdown of sales by model (Machinery vs Trucks vs EV Vans).<br>
+                  5. <strong>Customer Credit Limit Status:</strong> Are vehicles still delivered to customers with overdue balances?
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2 -->
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <div class="bg-slate-50 px-4 py-3 font-bold text-sm text-brand-900 flex items-center justify-between">
+              <span>2. MARKETING PERFORMANCE</span>
+              <span class="text-xs font-normal text-slate-500">Questions 3 & 4</span>
+            </div>
+            <div class="p-5 space-y-4 text-sm divide-y divide-slate-100">
+              <div class="pt-2">
+                <h4 class="font-bold text-slate-900 mb-1.5">Q3: Do you agree that marketing performance has improved because leads increased from 180 to 680?</h4>
+                <p class="text-slate-700 leading-relaxed">
+                  <strong class="text-rose-700">No, I do not agree.</strong> While top-of-funnel leads grew, lead quality and efficiency collapsed:
+                </p>
+                <ul class="list-disc pl-5 mt-2 space-y-1 text-slate-600">
+                  <li><strong>Qualified Lead % dropped:</strong> In April, 38.9% of leads were qualified (70/180). In September, only 25.0% qualified (170/680)—a 13.9% drop. 510 out of 680 leads were junk.</li>
+                  <li><strong>True Conversion halved:</strong> Lead-to-sale conversion dropped from 6.67% to 3.68%.</li>
+                  <li><strong>Cost per Qualified Lead (CPQL) rose:</strong> Increased from NPR 3,571 to NPR 4,118 (+15.3%). Marketing is paying more per real buyer.</li>
+                </ul>
+              </div>
+              <div class="pt-4">
+                <h4 class="font-bold text-slate-900 mb-1.5">Q4: What marketing KPIs to calculate and prioritize?</h4>
+                <p class="text-slate-600">
+                  Calculate: <em>Lead Qualification Rate %</em>, <em>Cost Per Qualified Lead (CPQL)</em>, <em>Lead-to-Sale Conversion Rate</em>, and <em>CAC per unit</em>.<br>
+                  <strong>Priority for Management:</strong> <strong>CPQL</strong> and <strong>Lead Qualification Rate %</strong>. Management should never evaluate marketing on raw leads alone.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3 & 4 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="border border-slate-200 rounded-xl p-5">
+              <span class="text-xs font-bold text-brand-700 uppercase tracking-wider">3. Import & Customs (Q5 & Q6)</span>
+              <h4 class="font-bold text-slate-900 mt-2">Best Margin & Landed Cost Report</h4>
+              <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                <strong>Machinery</strong> has the best margin (NPR 3.75 Lakh profit, 8.72% on SP, 9.55% markup). Pickup is second at 8.65%.<br><br>
+                <em>Can we decide pricing solely on this?</em> <strong>No.</strong> Excludes bank LC financing interest (8-10% p.a.), yard demurrage, PDI, warranty, and average 5% discounts which turn EV Vans unprofitable.
+              </p>
+            </div>
+
+            <div class="border border-slate-200 rounded-xl p-5">
+              <span class="text-xs font-bold text-brand-700 uppercase tracking-wider">4. Collections & Aging (Q7 & Q8)</span>
+              <h4 class="font-bold text-slate-900 mt-2">Critical Customer Priorities</h4>
+              <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                1. <strong>ABC Construction (Top Priority):</strong> 0.60 Cr overdue (24% of AR), 115 days aging, 48% uncollected. Stop all deliveries.<br>
+                2. <strong>Terai Cargo:</strong> 128 days overdue (0.24 Cr). High default risk.<br>
+                3. <strong>Everest Transport & Mid-West Logistics:</strong> Both past 90 days with >32% uncollected.<br>
+                <em>Policy:</em> Hard credit limits, 45-day stop-supply rule, and sales commissions linked to cash collected.
+              </p>
+            </div>
+          </div>
+
+          <!-- Section 5: Decision Recommendation -->
+          <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-5">
+            <div class="flex items-center gap-2 text-brand-900 font-bold text-sm mb-2">
+              <i class="fa-solid fa-lightbulb text-amber-500"></i>
+              <span>5. MANAGEMENT DECISION (Q9): OPTION A VS OPTION B</span>
+            </div>
+            <p class="text-sm text-slate-700 leading-relaxed">
+              Between Option A and Option B, <strong>I prefer Option A (continuing imports to capture increasing customer demand and protect market presence)</strong>, rather than shutting down imports completely.<br><br>
+              <strong>HOWEVER, because the company has limited cash, I would NOT make a final decision blindly.</strong> Before deciding whether to slow down imports or proceed with Option A, the critical information I would want to look at is the <strong>CURRENT CASH FLOW STATEMENT and a 30-TO-60 DAY CASH INFLOW / OUTFLOW PROJECTION</strong>:
+            </p>
+            <ul class="list-disc pl-5 mt-2 space-y-1 text-xs text-slate-600">
+              <li>Check exact bank cash balance, upcoming Letter of Credit (LC) maturity dates, and customs duty liabilities at the border.</li>
+              <li>If the cash projection shows enough liquidity (or we quickly recover NPR 3-4 Cr from the 90+ day debtors), proceed with <strong>Option A</strong> on high-margin models (Machinery & Pickups).</li>
+              <li>If the cash projection shows an immediate cash deficit, only then would we be forced to temporarily slow down imports on low-margin units (like EV Vans) while recovering debt.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: SALES & MARKETING FUNNEL -->
+    <!-- ========================================== -->
+    <div id="tab-sales" class="hidden space-y-6">
+      <!-- Sales & Marketing KPIs -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+          <p class="text-xs font-semibold text-slate-500 uppercase">Total Sales (6M)</p>
+          <p class="text-2xl font-bold text-slate-900 mt-1">NPR 35.70 Cr</p>
+          <p class="text-xs text-emerald-600 mt-1 font-medium"><i class="fa-solid fa-arrow-trend-up"></i> +147% from Apr to Sep</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+          <p class="text-xs font-semibold text-slate-500 uppercase">Total Receivables</p>
+          <p class="text-2xl font-bold text-rose-600 mt-1">NPR 10.80 Cr</p>
+          <p class="text-xs text-rose-500 mt-1 font-medium"><i class="fa-solid fa-arrow-trend-up"></i> +74.2% expansion</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+          <p class="text-xs font-semibold text-slate-500 uppercase">Avg. Discount Level</p>
+          <p class="text-2xl font-bold text-amber-600 mt-1">5.0% <span class="text-xs font-normal text-slate-500">(Sep)</span></p>
+          <p class="text-xs text-slate-500 mt-1">Surged from 2.0% in April</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+          <p class="text-xs font-semibold text-slate-500 uppercase">Cost Per Qual. Lead</p>
+          <p class="text-2xl font-bold text-slate-900 mt-1">NPR 4,118</p>
+          <p class="text-xs text-rose-500 mt-1 font-medium"><i class="fa-solid fa-arrow-up"></i> +15.3% cost increase</p>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+          <h3 class="font-bold text-slate-900 text-sm mb-4 flex items-center justify-between">
+            <span>Sales Value vs Outstanding Receivables (NPR Cr.)</span>
+            <span class="text-xs font-normal text-slate-400">Monthly Comparison</span>
+          </h3>
+          <div class="h-64">
+            <canvas id="salesReceivablesChart"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+          <h3 class="font-bold text-slate-900 text-sm mb-4 flex items-center justify-between">
+            <span>Marketing Lead Quality & Conversion Rates (%)</span>
+            <span class="text-xs font-normal text-slate-400">Funnel Decay</span>
+          </h3>
+          <div class="h-64">
+            <canvas id="marketingFunnelChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Historical Data Table with Working Formulas -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+          <h3 class="font-bold text-slate-900 text-sm">Monthly Performance Table & Calculated Metrics</h3>
+          <span class="text-xs text-slate-500">Formulas matching Excel Tab `1_Sales_&_Marketing`</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-100/70 text-slate-700 font-semibold uppercase tracking-wider">
+              <tr>
+                <th class="p-3">Month</th>
+                <th class="p-3 text-right">Units</th>
+                <th class="p-3 text-right">Sales (Cr)</th>
+                <th class="p-3 text-right">Avg Disc</th>
+                <th class="p-3 text-right">Mktg (L)</th>
+                <th class="p-3 text-right">Leads</th>
+                <th class="p-3 text-right">Qual. Leads</th>
+                <th class="p-3 text-right">AR (Cr)</th>
+                <th class="p-3 text-right">ASP/Unit (L)</th>
+                <th class="p-3 text-right">Qual %</th>
+                <th class="p-3 text-right">True Conv %</th>
+                <th class="p-3 text-right">CPQL (NPR)</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-mono">
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-sans font-medium text-slate-900">April</td>
+                <td class="p-3 text-right">12</td>
+                <td class="p-3 text-right">3.60</td>
+                <td class="p-3 text-right">2.0%</td>
+                <td class="p-3 text-right">2.5</td>
+                <td class="p-3 text-right">180</td>
+                <td class="p-3 text-right">70</td>
+                <td class="p-3 text-right">6.20</td>
+                <td class="p-3 text-right">30.00</td>
+                <td class="p-3 text-right font-semibold text-emerald-600">38.9%</td>
+                <td class="p-3 text-right font-semibold text-emerald-600">6.67%</td>
+                <td class="p-3 text-right">3,571</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-sans font-medium text-slate-900">May</td>
+                <td class="p-3 text-right">15</td>
+                <td class="p-3 text-right">4.80</td>
+                <td class="p-3 text-right">2.5%</td>
+                <td class="p-3 text-right">3.0</td>
+                <td class="p-3 text-right">240</td>
+                <td class="p-3 text-right">90</td>
+                <td class="p-3 text-right">7.00</td>
+                <td class="p-3 text-right">32.00</td>
+                <td class="p-3 text-right">37.5%</td>
+                <td class="p-3 text-right">6.25%</td>
+                <td class="p-3 text-right">3,333</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-sans font-medium text-slate-900">June</td>
+                <td class="p-3 text-right">18</td>
+                <td class="p-3 text-right">5.70</td>
+                <td class="p-3 text-right">3.0%</td>
+                <td class="p-3 text-right">3.5</td>
+                <td class="p-3 text-right">310</td>
+                <td class="p-3 text-right">105</td>
+                <td class="p-3 text-right">7.80</td>
+                <td class="p-3 text-right">31.67</td>
+                <td class="p-3 text-right">33.9%</td>
+                <td class="p-3 text-right">5.81%</td>
+                <td class="p-3 text-right">3,333</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-sans font-medium text-slate-900">July</td>
+                <td class="p-3 text-right">16</td>
+                <td class="p-3 text-right">5.20</td>
+                <td class="p-3 text-right">3.5%</td>
+                <td class="p-3 text-right">4.0</td>
+                <td class="p-3 text-right">360</td>
+                <td class="p-3 text-right">110</td>
+                <td class="p-3 text-right">8.60</td>
+                <td class="p-3 text-right">32.50</td>
+                <td class="p-3 text-right">30.6%</td>
+                <td class="p-3 text-right">4.44%</td>
+                <td class="p-3 text-right">3,636</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-sans font-medium text-slate-900">August</td>
+                <td class="p-3 text-right">22</td>
+                <td class="p-3 text-right">7.50</td>
+                <td class="p-3 text-right">4.5%</td>
+                <td class="p-3 text-right">5.5</td>
+                <td class="p-3 text-right">520</td>
+                <td class="p-3 text-right">145</td>
+                <td class="p-3 text-right">9.70</td>
+                <td class="p-3 text-right">34.09</td>
+                <td class="p-3 text-right">27.9%</td>
+                <td class="p-3 text-right">4.23%</td>
+                <td class="p-3 text-right">3,793</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="p-3 font-sans font-medium text-slate-900">September</td>
+                <td class="p-3 text-right">25</td>
+                <td class="p-3 text-right">8.90</td>
+                <td class="p-3 text-right font-semibold text-rose-600">5.0%</td>
+                <td class="p-3 text-right">7.0</td>
+                <td class="p-3 text-right">680</td>
+                <td class="p-3 text-right">170</td>
+                <td class="p-3 text-right font-semibold text-rose-600">10.80</td>
+                <td class="p-3 text-right">35.60</td>
+                <td class="p-3 text-right font-semibold text-rose-600">25.0%</td>
+                <td class="p-3 text-right font-semibold text-rose-600">3.68%</td>
+                <td class="p-3 text-right font-semibold text-rose-600">4,118</td>
+              </tr>
+            </tbody>
+            <tfoot class="bg-slate-100 font-semibold border-t-2 border-slate-300 font-mono">
+              <tr>
+                <td class="p-3 font-sans">Total / Avg</td>
+                <td class="p-3 text-right">108</td>
+                <td class="p-3 text-right">35.70</td>
+                <td class="p-3 text-right">3.4%</td>
+                <td class="p-3 text-right">25.5</td>
+                <td class="p-3 text-right">2,470</td>
+                <td class="p-3 text-right">690</td>
+                <td class="p-3 text-right">10.80</td>
+                <td class="p-3 text-right">33.06</td>
+                <td class="p-3 text-right">27.9%</td>
+                <td class="p-3 text-right">4.37%</td>
+                <td class="p-3 text-right">3,696</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: LANDED COST & UNIT ECONOMICS -->
+    <!-- ========================================== -->
+    <div id="tab-costing" class="hidden space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200">
+          <p class="text-xs text-slate-500 font-semibold uppercase">Machinery (Best Margin)</p>
+          <p class="text-xl font-bold text-emerald-600 mt-1">NPR 3.75 L (8.72%)</p>
+          <p class="text-xs text-slate-500 mt-1">Landed: 39.25L | SP: 43.0L</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200">
+          <p class="text-xs text-slate-500 font-semibold uppercase">Pickup (Rank #2)</p>
+          <p class="text-xl font-bold text-emerald-600 mt-1">NPR 3.20 L (8.65%)</p>
+          <p class="text-xs text-slate-500 mt-1">Landed: 33.80L | SP: 37.0L</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200">
+          <p class="text-xs text-slate-500 font-semibold uppercase">Truck (Rank #3)</p>
+          <p class="text-xl font-bold text-amber-600 mt-1">NPR 3.50 L (7.14%)</p>
+          <p class="text-xs text-slate-500 mt-1">Landed: 45.50L | SP: 49.0L</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200">
+          <p class="text-xs text-slate-500 font-semibold uppercase">EV Van (Thinnest Margin)</p>
+          <p class="text-xl font-bold text-rose-600 mt-1">NPR 2.50 L (6.41%)</p>
+          <p class="text-xs text-slate-500 mt-1">Landed: 36.50L | SP: 39.0L</p>
+        </div>
+      </div>
+
+      <!-- Interactive Discount Simulator -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm">Interactive Discount Sensitivity Simulator</h3>
+            <p class="text-xs text-slate-500">Test how average discount percentage destroys vehicle profit margins</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-semibold text-slate-600">Simulated Discount:</span>
+            <span id="discDisplay" class="bg-brand-50 text-brand-700 text-sm font-bold px-3 py-1 rounded-lg border border-brand-200 font-mono">5.0%</span>
+          </div>
+        </div>
+
+        <div class="py-4">
+          <input type="range" id="discSlider" min="0" max="8" step="0.5" value="5.0" class="w-full accent-brand-500 cursor-pointer">
+          <div class="flex justify-between text-xs text-slate-400 font-mono mt-1">
+            <span>0.0% (Base)</span>
+            <span>2.0% (April)</span>
+            <span>3.5% (July)</span>
+            <span>5.0% (Sept)</span>
+            <span>8.0% (Loss)</span>
+          </div>
+        </div>
+
+        <!-- Real-time Updated Table -->
+        <div class="overflow-x-auto mt-2">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-100 text-slate-700 font-semibold uppercase tracking-wider">
+              <tr>
+                <th class="p-3">Vehicle</th>
+                <th class="p-3 text-right">Landed Cost</th>
+                <th class="p-3 text-right">Base SP</th>
+                <th class="p-3 text-right">Base Margin</th>
+                <th class="p-3 text-right">Discount Given</th>
+                <th class="p-3 text-right">Net Profit Left</th>
+                <th class="p-3 text-right">Net Margin %</th>
+                <th class="p-3 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody id="simTableBody" class="divide-y divide-slate-100 font-mono">
+              <!-- Populated dynamically via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: RECEIVABLES & AGING MATRIX -->
+    <!-- ========================================== -->
+    <div id="tab-collections" class="hidden space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200">
+          <p class="text-xs text-slate-500 font-semibold uppercase">Total Portfolio AR</p>
+          <p class="text-2xl font-bold text-slate-900 mt-1">NPR 2.47 Cr</p>
+          <p class="text-xs text-slate-500 mt-1">From 10 Tracked Commercial Partners</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200">
+          <p class="text-xs text-slate-500 font-semibold uppercase">Overdue >90 Days</p>
+          <p class="text-2xl font-bold text-rose-600 mt-1">NPR 1.33 Cr (53.8%)</p>
+          <p class="text-xs text-rose-500 mt-1 font-medium">Critical bad-debt risk</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200">
+          <p class="text-xs text-slate-500 font-semibold uppercase">Top Debtor: ABC Construction</p>
+          <p class="text-2xl font-bold text-rose-600 mt-1">NPR 0.60 Cr</p>
+          <p class="text-xs text-slate-500 mt-1 font-medium">115 days overdue | 48% unpaid</p>
+        </div>
+      </div>
+
+      <!-- Customer Aging Table with Filter -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="px-5 py-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50">
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm">Customer Receivables & Aging Schedule</h3>
+            <p class="text-xs text-slate-500">Highlighting accounts with severe aging and high credit remaining %</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold text-slate-600">Filter:</span>
+            <select id="agingFilter" onchange="filterCustomers()" class="bg-white border border-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500">
+              <option value="all">All Accounts (10)</option>
+              <option value="critical">Critical (>90 Days)</option>
+              <option value="high">High (61-90 Days)</option>
+              <option value="normal">Normal (<=60 Days)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-100/70 text-slate-700 font-semibold uppercase tracking-wider">
+              <tr>
+                <th class="p-3">Customer</th>
+                <th class="p-3 text-right">Sales (Cr)</th>
+                <th class="p-3 text-right">Collected (Cr)</th>
+                <th class="p-3 text-right">Outstanding (Cr)</th>
+                <th class="p-3 text-right">Ageing</th>
+                <th class="p-3 text-right">% Collected</th>
+                <th class="p-3 text-right">Credit Remaining %</th>
+                <th class="p-3 text-center">Risk Level</th>
+                <th class="p-3">Recommended Action</th>
+              </tr>
+            </thead>
+            <tbody id="customerTableBody" class="divide-y divide-slate-100">
+              <!-- Rendered dynamically -->
+            </tbody>
+            <tfoot class="bg-slate-100 font-semibold border-t-2 border-slate-300">
+              <tr>
+                <td class="p-3">Total Portfolio</td>
+                <td class="p-3 text-right font-mono">8.77</td>
+                <td class="p-3 text-right font-mono">6.30</td>
+                <td class="p-3 text-right font-mono font-bold text-slate-900">2.47</td>
+                <td class="p-3 text-right font-mono">73.8 d</td>
+                <td class="p-3 text-right font-mono">71.8%</td>
+                <td class="p-3 text-right font-mono font-bold text-rose-600">28.2%</td>
+                <td class="p-3 text-center text-xs font-sans text-rose-600">53.8% >90d</td>
+                <td class="p-3 text-xs text-slate-600">Enforce Hard Stop Supply</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 5: OPTION A VS OPTION B STRATEGY -->
+    <!-- ========================================== -->
+    <div id="tab-decision" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+        <h3 class="text-base font-bold text-slate-900 mb-2">Management Strategic Dilemma: Option A vs Option B</h3>
+        <p class="text-xs text-slate-500 mb-6">Evaluating aggressive import growth vs collection freeze in a cash-limited environment</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Option A Card -->
+          <div class="border border-slate-200 rounded-xl p-5 bg-slate-50/50">
+            <div class="flex items-center justify-between mb-3">
+              <span class="font-bold text-sm text-slate-900">OPTION A: Import Additional Vehicles</span>
+              <span class="bg-blue-100 text-brand-700 text-xs px-2.5 py-0.5 rounded font-semibold">Candidate Preference</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              <strong>Rationale:</strong> Sales demand is expanding (12 units &rarr; 25 units). Halting imports hands market share to competitors and damages dealership reputation.<br><br>
+              <strong class="text-rose-600">The Danger:</strong> Without cash visibility, blind imports cause bank LC defaults because LC and customs duties require hard cash while customers take 100+ days to pay.
+            </p>
+          </div>
+
+          <!-- Option B Card -->
+          <div class="border border-slate-200 rounded-xl p-5 bg-slate-50/50">
+            <div class="flex items-center justify-between mb-3">
+              <span class="font-bold text-sm text-slate-900">OPTION B: Freeze Imports & Focus on AR</span>
+              <span class="bg-slate-200 text-slate-700 text-xs px-2.5 py-0.5 rounded font-semibold">Defensive</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              <strong>Rationale:</strong> Avoids taking on new LC liabilities and forces all operational energy into collecting the NPR 10.8 Cr trapped in receivables.<br><br>
+              <strong class="text-rose-600">The Danger:</strong> Halting vehicle deliveries kills sales momentum, causes sales team demoralization, and fixed yard overhead still bleeds cash.
+            </p>
+          </div>
+        </div>
+
+        <!-- The Deciding Factor Box -->
+        <div class="mt-6 bg-brand-50 border border-brand-200 rounded-xl p-5">
+          <h4 class="font-bold text-brand-900 text-sm flex items-center gap-2">
+            <i class="fa-solid fa-compass text-brand-500"></i>
+            <span>The Deciding Factor: Look at Cash Flow Projections</span>
+          </h4>
+          <p class="text-xs text-slate-700 mt-2 leading-relaxed">
+            As a Data Analyst, my recommendation is: <strong>I prefer Option A, but management must review the 30-to-60 day Cash Flow Inflow vs Outflow Projection to determine whether we can execute Option A safely or if we are forced to slow down imports.</strong>
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 text-xs font-medium">
+            <div class="bg-white p-3 rounded-lg border border-brand-100 shadow-xs">
+              <span class="text-slate-400 block text-[11px] uppercase">Condition 1</span>
+              <span class="text-slate-800 font-bold">Cash Inflow >= LC Commitments</span>
+              <p class="text-slate-500 text-[11px] mt-1">&rarr; Execute Option A on high-margin Machinery & Pickups.</p>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-brand-100 shadow-xs">
+              <span class="text-slate-400 block text-[11px] uppercase">Condition 2</span>
+              <span class="text-slate-800 font-bold">Recover NPR 3-4 Cr from >90d AR</span>
+              <p class="text-slate-500 text-[11px] mt-1">&rarr; Use recovered delinquent debt to self-fund next import batch.</p>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-brand-100 shadow-xs">
+              <span class="text-slate-400 block text-[11px] uppercase">Condition 3</span>
+              <span class="text-slate-800 font-bold">Enforce 35% Cash Down Payment</span>
+              <p class="text-slate-500 text-[11px] mt-1">&rarr; Stop 100% open credit; collect cash before vehicle handover.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p>&copy; 2026 Mohan Regmi | Commercial BI Portfolio Dashboard</p>
+      <div class="flex items-center gap-4">
+        <a href="https://regmimohan.com.np/" target="_blank" class="hover:text-brand-700 transition">Portfolio Website</a>
+        <a href="Automotive_Case_Study_Candidate_Solution.xlsx" download class="hover:text-emerald-700 font-medium transition">Download Candidate Excel</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    // AUTH LOGIC
+    const loginModal = document.getElementById('loginModal');
+    const loginForm = document.getElementById('loginForm');
+    const passcode = document.getElementById('passcode');
+    const authError = document.getElementById('authError');
+    const guestLoginBtn = document.getElementById('guestLoginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // Check existing session
+    if (localStorage.getItem('spark_auth') === 'true') {
+      loginModal.classList.add('hidden');
+    }
+
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = passcode.value.trim().toLowerCase();
+      if (val === 'spark' || val === 'mohan' || val === 'admin' || val === '2026') {
+        grantAccess();
+      } else {
+        authError.classList.remove('hidden');
+      }
+    });
+
+    guestLoginBtn.addEventListener('click', () => {
+      grantAccess();
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('spark_auth');
+      loginModal.classList.remove('hidden');
+      passcode.value = '';
+    });
+
+    function grantAccess() {
+      localStorage.setItem('spark_auth', 'true');
+      loginModal.classList.add('hidden');
+      authError.classList.add('hidden');
+    }
+
+    // TAB SWITCHING
+    function switchTab(tabId) {
+      const tabs = ['tab-overview', 'tab-sales', 'tab-costing', 'tab-collections', 'tab-decision'];
+      tabs.forEach(t => {
+        document.getElementById(t).classList.add('hidden');
+        document.getElementById('nav-' + t).classList.remove('tab-active');
+      });
+      document.getElementById(tabId).classList.remove('hidden');
+      document.getElementById('nav-' + tabId).classList.add('tab-active');
+
+      // Trigger resize for charts if switching to sales
+      if (tabId === 'tab-sales') {
+        salesChart.resize();
+        funnelChart.resize();
+      }
+    }
+
+    // CHARTS INITIALIZATION
+    let salesChart, funnelChart;
+    window.addEventListener('load', () => {
+      // 1. Sales vs Receivables
+      const ctxSales = document.getElementById('salesReceivablesChart').getContext('2d');
+      salesChart = new Chart(ctxSales, {
+        type: 'bar',
+        data: {
+          labels: ['April', 'May', 'June', 'July', 'August', 'September'],
+          datasets: [
+            {
+              label: 'Sales Value (Cr)',
+              data: [3.60, 4.80, 5.70, 5.20, 7.50, 8.90],
+              backgroundColor: '#0284c7',
+              borderRadius: 6
+            },
+            {
+              label: 'Receivables Outstanding (Cr)',
+              data: [6.20, 7.00, 7.80, 8.60, 9.70, 10.80],
+              backgroundColor: '#e11d48',
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: '#f1f5f9' }, title: { display: true, text: 'NPR Crores' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+
+      // 2. Marketing Funnel Trend
+      const ctxFunnel = document.getElementById('marketingFunnelChart').getContext('2d');
+      funnelChart = new Chart(ctxFunnel, {
+        type: 'line',
+        data: {
+          labels: ['April', 'May', 'June', 'July', 'August', 'September'],
+          datasets: [
+            {
+              label: 'Lead Qual Rate %',
+              data: [38.9, 37.5, 33.9, 30.6, 27.9, 25.0],
+              borderColor: '#f59e0b',
+              backgroundColor: 'rgba(245, 158, 11, 0.1)',
+              tension: 0.3,
+              borderWidth: 2,
+              fill: true
+            },
+            {
+              label: 'True Conversion %',
+              data: [6.67, 6.25, 5.81, 4.44, 4.23, 3.68],
+              borderColor: '#ef4444',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              tension: 0.3,
+              borderWidth: 2,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: '#f1f5f9' }, title: { display: true, text: 'Percentage (%)' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+
+      // Initialize simulator
+      updateDiscountSim();
+      renderCustomers('all');
+    });
+
+    // DISCOUNT SIMULATOR
+    const vehicles = [
+      { name: 'EV Van', landed: 36.5, sp: 39.0 },
+      { name: 'Truck', landed: 45.5, sp: 49.0 },
+      { name: 'Pickup', landed: 33.8, sp: 37.0 },
+      { name: 'Machinery', landed: 39.25, sp: 43.0 }
+    ];
+
+    const discSlider = document.getElementById('discSlider');
+    const discDisplay = document.getElementById('discDisplay');
+    const simTableBody = document.getElementById('simTableBody');
+
+    discSlider.addEventListener('input', updateDiscountSim);
+
+    function updateDiscountSim() {
+      const disc = parseFloat(discSlider.value);
+      discDisplay.textContent = disc.toFixed(1) + '%';
+      simTableBody.innerHTML = '';
+
+      vehicles.forEach(v => {
+        const baseMargin = v.sp - v.landed;
+        const discAmt = v.sp * (disc / 100);
+        const netProfit = baseMargin - discAmt;
+        const netSP = v.sp - discAmt;
+        const netMarginPct = (netProfit / netSP) * 100;
+
+        let statusBadge = '';
+        if (netProfit <= 0) {
+          statusBadge = '<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded font-bold">LOSS</span>';
+        } else if (netMarginPct < 3.0) {
+          statusBadge = '<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-bold">CRITICAL</span>';
+        } else {
+          statusBadge = '<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold">HEALTHY</span>';
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50';
+        tr.innerHTML = `
+          <td class="p-3 font-sans font-medium text-slate-900">${v.name}</td>
+          <td class="p-3 text-right">${v.landed.toFixed(2)} L</td>
+          <td class="p-3 text-right">${v.sp.toFixed(2)} L</td>
+          <td class="p-3 text-right">${baseMargin.toFixed(2)} L</td>
+          <td class="p-3 text-right text-rose-600">-${discAmt.toFixed(2)} L</td>
+          <td class="p-3 text-right font-bold ${netProfit < 1.0 ? 'text-rose-600' : 'text-slate-900'}">${netProfit.toFixed(2)} L</td>
+          <td class="p-3 text-right font-semibold ${netMarginPct < 3.0 ? 'text-rose-600' : 'text-emerald-600'}">${netMarginPct.toFixed(2)}%</td>
+          <td class="p-3 text-center">${statusBadge}</td>
+        `;
+        simTableBody.appendChild(tr);
+      });
+    }
+
+    // CUSTOMER AGING TABLE & FILTER
+    const customers = [
+      { name: 'ABC Construction', sales: 1.25, collected: 0.65, outstanding: 0.60, aging: 115, priority: 'CRITICAL', cat: 'critical', action: 'STOP SUPPLY + Legal Notice' },
+      { name: 'Himalayan Logistics', sales: 0.98, collected: 0.70, outstanding: 0.28, aging: 78, priority: 'HIGH', cat: 'high', action: 'Senior Follow-up; Hold Orders' },
+      { name: 'Shree Infrastructure', sales: 0.82, collected: 0.61, outstanding: 0.21, aging: 42, priority: 'NORMAL', cat: 'normal', action: 'Standard Statement Notice' },
+      { name: 'Everest Transport', sales: 0.76, collected: 0.50, outstanding: 0.26, aging: 102, priority: 'CRITICAL', cat: 'critical', action: 'Executive Escalation' },
+      { name: 'National Contractors', sales: 1.45, collected: 1.20, outstanding: 0.25, aging: 35, priority: 'NORMAL', cat: 'normal', action: 'Routine Relationship Call' },
+      { name: 'Terai Cargo', sales: 0.69, collected: 0.45, outstanding: 0.24, aging: 128, priority: 'CRITICAL', cat: 'critical', action: 'STOP SUPPLY + Cheque Deposit' },
+      { name: 'Lumbini Projects', sales: 0.58, collected: 0.43, outstanding: 0.15, aging: 65, priority: 'HIGH', cat: 'high', action: 'Statement Reconciliation' },
+      { name: 'Eastern Haulage', sales: 0.62, collected: 0.52, outstanding: 0.10, aging: 28, priority: 'NORMAL', cat: 'normal', action: 'Current / Good Standing' },
+      { name: 'Mid-West Logistics', sales: 0.71, collected: 0.48, outstanding: 0.23, aging: 94, priority: 'CRITICAL', cat: 'critical', action: 'Weekly Payment Plan' },
+      { name: 'Valley Developers', sales: 0.91, collected: 0.76, outstanding: 0.15, aging: 51, priority: 'NORMAL', cat: 'normal', action: 'Routine Reminder' }
+    ];
+
+    function filterCustomers() {
+      const cat = document.getElementById('agingFilter').value;
+      renderCustomers(cat);
+    }
+
+    function renderCustomers(filterCat) {
+      const tbody = document.getElementById('customerTableBody');
+      tbody.innerHTML = '';
+
+      const filtered = customers.filter(c => filterCat === 'all' || c.cat === filterCat);
+
+      filtered.forEach(c => {
+        const pctCollected = ((c.collected / c.sales) * 100).toFixed(1) + '%';
+        const creditRemaining = ((c.outstanding / c.sales) * 100).toFixed(1) + '%';
+
+        let riskBadge = '';
+        if (c.priority === 'CRITICAL') {
+          riskBadge = '<span class="bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded text-[11px]">CRITICAL (>90d)</span>';
+        } else if (c.priority === 'HIGH') {
+          riskBadge = '<span class="bg-amber-100 text-amber-700 font-bold px-2 py-0.5 rounded text-[11px]">HIGH (61-90d)</span>';
+        } else {
+          riskBadge = '<span class="bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded text-[11px]">NORMAL (<=60d)</span>';
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 font-mono';
+        tr.innerHTML = `
+          <td class="p-3 font-sans font-medium text-slate-900">${c.name}</td>
+          <td class="p-3 text-right">${c.sales.toFixed(2)}</td>
+          <td class="p-3 text-right">${c.collected.toFixed(2)}</td>
+          <td class="p-3 text-right font-bold ${c.outstanding >= 0.25 ? 'text-rose-600' : 'text-slate-900'}">${c.outstanding.toFixed(2)}</td>
+          <td class="p-3 text-right font-bold ${c.aging > 90 ? 'text-rose-600' : 'text-slate-700'}">${c.aging} d</td>
+          <td class="p-3 text-right">${pctCollected}</td>
+          <td class="p-3 text-right font-bold ${parseFloat(creditRemaining) > 30 ? 'text-rose-600' : 'text-slate-700'}">${creditRemaining}</td>
+          <td class="p-3 text-center font-sans">${riskBadge}</td>
+          <td class="p-3 font-sans text-xs ${c.priority === 'CRITICAL' ? 'font-semibold text-rose-700' : 'text-slate-600'}">${c.action}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+  </script>
+</body>
+</html>

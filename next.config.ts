@@ -8,6 +8,19 @@ const nextConfig: NextConfig = {
     root: path.resolve(__dirname),
   },
   reactCompiler: true,
+  async rewrites() {
+    return [
+      {
+        source: '/spark',
+        destination: '/spark/index.html',
+      },
+      {
+        source: '/dashboard/case-study',
+        destination: '/spark/index.html',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
+
