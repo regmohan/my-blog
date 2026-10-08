@@ -83,6 +83,8 @@ export default function Home() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [selectedFileObj, setSelectedFileObj] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const [loginUser, setLoginUser] = useState("");
   const [loginPass, setLoginPass] = useState("");
@@ -97,7 +99,7 @@ export default function Home() {
   const [copyToast, setCopyToast] = useState(false);
   const [formFeedback, setFormFeedback] = useState("");
 
-  // Hydrate state from localStorage
+  // Hydrate state from localStorage and sync latest global avatar from Vercel Blob
   useEffect(() => {
     const saved = localStorage.getItem('mohan_portfolio_data');
     if (saved) {
@@ -107,6 +109,16 @@ export default function Home() {
         console.error("Failed to parse saved portfolio data:", e);
       }
     }
+
+    // Fetch latest permanent Vercel Blob avatar (visible to all visitors worldwide)
+    fetch('/api/avatar')
+      .then(res => res.json())
+      .then(result => {
+        if (result?.url) {
+          setData(prev => ({ ...prev, profilePic: result.url }));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const saveToStorage = (updated: PortfolioData) => {
@@ -136,10 +148,11 @@ export default function Home() {
     }
   };
 
-  // Social-Media Style File Upload Handler (FileReader -> Base64)
+  // Social-Media Style File Upload Handler (Base64 preview + File object for Vercel Blob)
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setSelectedFileObj(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
@@ -149,11 +162,51 @@ export default function Home() {
     }
   };
 
-  const handleSaveUploadedPhoto = () => {
-    if (selectedFile) {
-      saveToStorage({ ...data, profilePic: selectedFile });
-      setShowPhotoModal(false);
-      setSelectedFile(null);
+  const handleSaveUploadedPhoto = async () => {
+    if (!selectedFile && !selectedFileObj) return;
+
+    setIsUploading(true);
+    try {
+      if (selectedFileObj) {
+        // 1. Upload to Vercel Blob global storage
+        const formData = new FormData();
+        formData.append('file', selectedFileObj);
+
+        const res = await fetch('/api/avatar', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const json = await res.json();
+        if (json?.url) {
+          const updated = { ...data, profilePic: json.url };
+          saveToStorage(updated);
+          setShowPhotoModal(false);
+          setSelectedFile(null);
+          setSelectedFileObj(null);
+          return;
+        } else {
+          console.warn("Vercel Blob upload response:", json);
+        }
+      }
+
+      // Fallback: save local state
+      if (selectedFile) {
+        saveToStorage({ ...data, profilePic: selectedFile });
+        setShowPhotoModal(false);
+        setSelectedFile(null);
+        setSelectedFileObj(null);
+      }
+    } catch (err) {
+      console.error("Vercel Blob upload error:", err);
+      if (selectedFile) {
+        saveToStorage({ ...data, profilePic: selectedFile });
+        setShowPhotoModal(false);
+        setSelectedFile(null);
+        setSelectedFileObj(null);
+      }
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -925,14 +978,21 @@ export default function Home() {
                 </button>
                 <button
                   onClick={handleSaveUploadedPhoto}
-                  disabled={!selectedFile}
-                  className={`px-5 py-2.5 rounded-xl font-bold text-xs text-white shadow-lg transition-all ${
-                    selectedFile
+                  disabled={!selectedFile || isUploading}
+                  className={`px-5 py-2.5 rounded-xl font-bold text-xs text-white shadow-lg transition-all flex items-center gap-2 ${
+                    selectedFile && !isUploading
                       ? 'bg-blue-600 hover:bg-blue-500 cursor-pointer shadow-blue-500/30'
                       : 'bg-slate-800 text-slate-500 cursor-not-allowed'
                   }`}
                 >
-                  Save Profile Photo
+                  {isUploading ? (
+                    <>
+                      <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                      <span>Uploading to Vercel CDN...</span>
+                    </>
+                  ) : (
+                    <span>Save & Publish Photo</span>
+                  )}
                 </button>
               </div>
             </div>
