@@ -36,7 +36,7 @@ interface PortfolioData {
 }
 
 const DEFAULT_DATA: PortfolioData = {
-  profilePic: "https://regmimohan.com.np/_next/image?url=%2Fprofile.jpg&w=640&q=75",
+  profilePic: "/profile.jpg?v=2",
   name: "Mohan Regmi",
   title: "Executive Operations & MIS Professional",
   subtitle: "Strategic Operations Expert | Data Intelligence Specialist | Process Optimization Advocate",
