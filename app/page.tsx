@@ -392,36 +392,40 @@ export default function Home() {
                   
                   <div className="relative rounded-3xl bg-slate-900 border border-slate-800 p-6 shadow-2xl backdrop-blur-xl">
                     
-                    {/* Clickable Image Container */}
+                    {/* Profile Image Container */}
                     <div
-                      onClick={triggerPhotoUpload}
-                      className="relative w-full aspect-square rounded-2xl overflow-hidden border-2 border-slate-700/80 shadow-inner group cursor-pointer"
+                      onClick={isAdmin ? triggerPhotoUpload : undefined}
+                      className={`relative w-full aspect-square rounded-2xl overflow-hidden border-2 border-slate-700/80 shadow-inner group ${isAdmin ? 'cursor-pointer' : ''}`}
                     >
                       <Image
                         src={data.profilePic}
                         alt="Mohan Regmi"
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        className={`object-cover ${isAdmin ? 'group-hover:scale-105' : ''} transition-transform duration-500`}
                         unoptimized
                       />
                       
-                      {/* Hover Overlay with Camera Icon */}
-                      <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 z-20">
-                        <div className="w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl shadow-2xl">
-                          📷
+                      {/* Hover Overlay with Camera Icon (Admin Only) */}
+                      {isAdmin && (
+                        <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 z-20">
+                          <div className="w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl shadow-2xl">
+                            📷
+                          </div>
+                          <span className="text-xs font-bold text-white bg-slate-900/90 px-3.5 py-1.5 rounded-full border border-slate-700 shadow">
+                            Click to Change Photo
+                          </span>
                         </div>
-                        <span className="text-xs font-bold text-white bg-slate-900/90 px-3.5 py-1.5 rounded-full border border-slate-700 shadow">
-                          Click to Change Photo
-                        </span>
-                      </div>
+                      )}
 
-                      {/* Always Visible Top-Right Badge Button */}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); triggerPhotoUpload(); }}
-                        className="absolute top-3 right-3 z-30 px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-2xl border border-blue-400 flex items-center gap-1.5 transition-all transform hover:scale-105"
-                      >
-                        📷 <span>Change Photo</span>
-                      </button>
+                      {/* Top-Right Badge Button (Admin Only) */}
+                      {isAdmin && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); triggerPhotoUpload(); }}
+                          className="absolute top-3 right-3 z-30 px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-2xl border border-blue-400 flex items-center gap-1.5 transition-all transform hover:scale-105"
+                        >
+                          📷 <span>Change Photo</span>
+                        </button>
+                      )}
 
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80 pointer-events-none"></div>
                       
@@ -435,13 +439,15 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Dedicated Photo Upload Action Button below Image */}
-                    <button
-                      onClick={triggerPhotoUpload}
-                      className="w-full mt-4 py-3 px-4 rounded-xl bg-blue-600/20 hover:bg-blue-600 border border-blue-500/40 hover:border-blue-400 text-blue-300 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-lg"
-                    >
-                      📷 <span>Click Here to Upload / Change Profile Photo</span>
-                    </button>
+                    {/* Dedicated Photo Upload Action Button below Image (Admin Only) */}
+                    {isAdmin && (
+                      <button
+                        onClick={triggerPhotoUpload}
+                        className="w-full mt-4 py-3 px-4 rounded-xl bg-blue-600/20 hover:bg-blue-600 border border-blue-500/40 hover:border-blue-400 text-blue-300 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-lg"
+                      >
+                        📷 <span>Click Here to Upload / Change Profile Photo</span>
+                      </button>
+                    )}
 
                     <div className="mt-4 space-y-4">
                       <div className="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-3">
