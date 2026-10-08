@@ -84,8 +84,8 @@ export default function Home() {
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
-  const [loginUser, setLoginUser] = useState("admin");
-  const [loginPass, setLoginPass] = useState("admin123");
+  const [loginUser, setLoginUser] = useState("");
+  const [loginPass, setLoginPass] = useState("");
   const [loginError, setLoginError] = useState("");
 
   // Showcase state
@@ -127,12 +127,12 @@ export default function Home() {
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if ((loginUser === 'admin' || loginUser === 'mohanregmi@email.com') && loginPass === 'admin123') {
+    if ((loginUser === 'admin' || loginUser === 'mohanregmi@email.com') && loginPass === 'Sus!@#302@#') {
       setIsAdmin(true);
       setShowLoginModal(false);
       setLoginError("");
     } else {
-      setLoginError("Invalid username or password. Try 'admin' / 'admin123'");
+      setLoginError("Invalid username or password.");
     }
   };
 
