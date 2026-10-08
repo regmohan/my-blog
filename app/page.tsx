@@ -184,27 +184,19 @@ export default function Home() {
           setShowPhotoModal(false);
           setSelectedFile(null);
           setSelectedFileObj(null);
+          alert("Success! Your profile photo has been uploaded to Vercel and published live for all visitors worldwide!");
           return;
         } else {
-          console.warn("Vercel Blob upload response:", json);
+          alert("Upload failed: " + (json?.error || "Could not save to Vercel"));
+          return;
         }
       }
 
-      // Fallback: save local state
-      if (selectedFile) {
-        saveToStorage({ ...data, profilePic: selectedFile });
-        setShowPhotoModal(false);
-        setSelectedFile(null);
-        setSelectedFileObj(null);
-      }
-    } catch (err) {
+      // If no new file selected, keep current
+      setShowPhotoModal(false);
+    } catch (err: any) {
       console.error("Vercel Blob upload error:", err);
-      if (selectedFile) {
-        saveToStorage({ ...data, profilePic: selectedFile });
-        setShowPhotoModal(false);
-        setSelectedFile(null);
-        setSelectedFileObj(null);
-      }
+      alert("Error uploading photo: " + (err?.message || "Network error"));
     } finally {
       setIsUploading(false);
     }
